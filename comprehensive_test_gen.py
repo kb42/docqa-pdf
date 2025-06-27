@@ -11,7 +11,7 @@ import re
 import string
 
 # Import your generative QA function from qa.py
-from src.qa import generative_qa_openai_optimized  
+from src.qa import generative_qa_groq  
 
 # Set publication-quality plotting style
 plt.style.use('default')

@@ -1,10 +1,9 @@
-# src/evaluate_squad.py
 import argparse
 import json
 import collections
 import string
 import re
-from src.qa import extractive_qa, generative_qa_openai_optimized
+from src.qa import extractive_qa, generative_qa_groq
 
 
 def normalize_answer(s):

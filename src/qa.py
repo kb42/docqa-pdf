@@ -8,7 +8,8 @@ import numpy as np
 from sentence_transformers import SentenceTransformer, CrossEncoder
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 
-from openai import OpenAI
+import groq
+from groq import Groq
 
 
 def load_resources(
@@ -230,92 +231,53 @@ def extractive_qa(question, context, model_name="deepset/roberta-base-squad2",
     
     return _qa_system.extractive_qa(question, context, max_length, return_confidence, confidence_threshold)
 
-
-def generative_qa_openai_optimized(query: str, context: str) -> str:
-    # skip if context is empty
-    if not context or not context.strip():
-        return ""
+def generative_qa_groq(query, contexts, model_name="llama-3.1-8b-instant"):
+    """Generate answer using Groq API - FREE and FAST!"""
+    if not contexts:
+        return "No relevant context found in the document."
     
-    # truncate long contexts
-    if len(context) > 1500:
-        context = context[:1500] + "..."
+    context_text = "\n\n".join([
+        c['text'] if isinstance(c, dict) else str(c) 
+        for c in contexts[:3]  
+    ])
+    
+    prompt = f"""Based on the following context from a document, answer the question. If the answer cannot be found in the context, respond with "No answer found in the document."
+
+Context:
+{context_text}
+
+Question: {query}
+
+Answer:"""
     
     try:
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        # Get API key from environment or Streamlit secrets
+        api_key = os.getenv('GROQ_API_KEY') or st.secrets.get('GROQ_API_KEY')
+
+        if not api_key:
+            print("Error: No API KEY")
         
-        # carefully designed prompt for strict answering
-        messages = [
-            {
-                "role": "system",
-                "content": (
-                    "you are a strict reading comprehension assistant. follow these rules exactly:\n\n"
-                    "1. only answer if the exact answer is explicitly stated in the context\n"
-                    "2. do not make inferences or combine information\n"
-                    "3. if the exact answer isn't directly stated, respond 'unanswerable'\n"
-                    "4. give the shortest possible answer using only words from the context"
-                )
-            },
-            {
-                "role": "user",
-                "content": (
-                    "context: john is the ceo of techcorp. techcorp was founded in 1995.\n\n"
-                    "question: who founded techcorp?"
-                )
-            },
-            {
-                "role": "assistant",
-                "content": "unanswerable"
-            },
-            {
-                "role": "user",
-                "content": (
-                    "context: john is the ceo of techcorp. techcorp was founded in 1995.\n\n"
-                    "question: when was techcorp founded?"
-                )
-            },
-            {
-                "role": "assistant",
-                "content": "1995"
-            },
-            {
-                "role": "user",
-                "content": (
-                    "context: john is the ceo of techcorp. techcorp was founded in 1995. There is ongoing competition between Techcorp and Techcrop companies over intellectual property rights.\n\n"
-                    "question: What is the conflict between techcorp and techcrop based on?"
-                )
-            },
-            {
-                "role": "assistant",
-                "content": "intellectual property rights"
-            },
-            {
-                "role": "user",
-                "content": f"context: {context}\n\nquestion: {query}"
-            }
-        ]
-        
-        # call openai api
+        client = Groq(api_key=api_key)
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages,
-            temperature=0.0,
-            max_tokens=30,
+            model=model_name,
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that answers questions based on provided document context. Be concise but comprehensive."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.1,
+            max_tokens=300,
+            top_p=0.9
         )
         
         answer = response.choices[0].message.content.strip()
         
-        # convert 'unanswerable' to empty string
-        if answer.upper() == "UNANSWERABLE":
-            return ""
-        
-        # clean up gpt-isms
         if answer.lower().startswith("answer:"):
             answer = answer[7:].strip()
         
         return answer
         
     except Exception as e:
-        return ""
+        return f"Error with Groq API: {str(e)}"
 
 def post_process_answer(answer: str, question: str) -> str:
     # handle empty answers
