@@ -1,0 +1,7 @@
+.venv/
+data/
+squad_analysis_20250622_172042/squad_eval.json
+squad_analysis_20250622_172042/squad_eval_gen.json
+squad_analysis_20250622_172042/squad_preds.json
+squad_analysis_20250622_172042/squad_preds_gen.json
+src/__pycache__

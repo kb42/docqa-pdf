@@ -1,0 +1,43 @@
+================================================================================
+ROBERTA-BASE-SQUAD2 COMPREHENSIVE EVALUATION REPORT
+================================================================================
+Generated: 2025-06-22 17:26:13
+Model: deepset/roberta-base-squad2
+Dataset: SQuAD 2.0
+Test samples: 300
+Confidence threshold: 0.4
+
+OVERALL PERFORMANCE METRICS
+----------------------------------------
+Overall Accuracy: 77.7%
+Overall F1 Score: 78.3%
+Overall Exact Match: 77.7%
+
+PERFORMANCE BY QUESTION TYPE
+----------------------------------------
+Answerable Questions (150 total):
+  Accuracy: 66.0%
+  F1 Score: 67.3%
+  Exact Match: 66.0%
+
+Unanswerable Questions (150 total):
+  Accuracy: 89.3%
+
+CONFIDENCE SCORE ANALYSIS
+----------------------------------------
+Successful predictions average confidence: 0.822
+Failed predictions average confidence: 0.539
+Confidence separation gap: 0.283
+
+ANSWER LENGTH STATISTICS
+----------------------------------------
+Average answer length: 1.9 words
+Median answer length: 2.0 words
+Max answer length: 9 words
+Single-word answers: 59 (48.4%)
+
+MODEL PERFORMANCE INSIGHTS
+----------------------------------------
+Performance assessment: EXCELLENT - Model exceeds 75% F1 score target.
+Model strength: Better at identifying unanswerable questions than answering valid ones.
+Confidence calibration: EXCELLENT - Strong separation between correct and incorrect predictions.
